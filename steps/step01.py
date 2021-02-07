@@ -1,7 +1,18 @@
 import numpy as np
 
+
+def as_array(x):
+    if np.isscalar(x):
+        return np.array(x)
+    return x
+
+
 class Variable:
     def __init__(self, data):
+        if data is not None:
+            if not isinstance(data, np.ndarray):
+                raise TypeError(f"{type(data)}은(는) 지원하지 않습니다.")
+
         self.data = data
         self.grad = None
         self.creator = None
@@ -10,6 +21,9 @@ class Variable:
         self.creator = func
 
     def backward(self):
+        if self.grad is None:
+            self.grad = np.ones_like(self.data)
+
         funcs = [self.creator]
         while funcs:
             f = funcs.pop()
@@ -18,13 +32,13 @@ class Variable:
 
             if x.creator is not None:
                 funcs.append(x.creator)
-            
+
 
 class Function:
     def __call__(self, input):
         x = input.data
         y = self.forward(x)
-        output = Variable(y)
+        output = Variable(as_array(y))
         output.set_creator(self)
         self.input = input
         self.output = output
@@ -35,7 +49,7 @@ class Function:
 
     def backward(self, gy):
         raise NotImplementedError()
-        
+
 
 class Square(Function):
     def forward(self, x):
@@ -46,6 +60,7 @@ class Square(Function):
         gx = 2 * x * gy
         return gx
 
+
 class Exp(Function):
     def forward(self, x):
         return np.exp(x)
@@ -55,15 +70,18 @@ class Exp(Function):
         gx = np.exp(x) * gy
         return gx
 
-A = Square()
-B = Exp()
-C = Square()
 
-x: Variable = Variable(np.array(0.5))
-a: Variable = A(x)
-b: Variable = B(a)
-y: Variable = C(b)
+def square(x):
+    return Square()(x)
 
-y.grad = np.array(1.0)
+
+def exp(x):
+    return Exp()(x)
+
+
+x = Variable(np.array(0.5))
+y = square(exp(square(x)))
 y.backward()
+
 print(x.grad)
+
