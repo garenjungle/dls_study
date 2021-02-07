@@ -1,0 +1,10 @@
+{
+    "python.pythonPath": "C:\\Users\\User\\anaconda3\\envs\\dls\\python.exe",
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true,
+    "python.formatting.provider": "black",
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "C:\\deep\\dls_study"
+    }
+}
